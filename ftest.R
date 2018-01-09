@@ -1,5 +1,5 @@
 setwd("repos/uni/f-test/")
-
+library(car)
 # Part 1: Testing overall significance of regression model
 
 # The dataset contains info about pollution levels in different cities of the USA.
@@ -69,25 +69,24 @@ F
 pvalue <- 1 - pf(F, k, n-k-1)
 pvalue
 
-# Part 2: Variable selection
-full <- lm(SO2 ~ popul + wind + precip + temp + predays, data = df) 
+# Part 2: Partial F-Test for variable selection
+#-----------------
+
+full <- lm(income ~ education + women + prestige + census, data = Prestige) 
 summary(full)
-reduced <- lm(SO2 ~ wind + precip + predays, data = df) 
+reduced <- lm(income ~ education + prestige, data = Prestige)
 anova(reduced, full) # Low pval -> Reject H0 (H0=the vars we took out were useless)
 
-reduced2 <- lm(SO2 ~ popul + temp, data = df) 
-anova(reduced2, full)# High pval -> not enough evidence to reject H0 (so the vars we took out were useless)
+yhat.full <- predict(full, Prestige[,c("education", "women", "prestige", "census")])
+yhat.red <-  predict(reduced, Prestige[, c("education", "prestige")])
 
-yhat.full <- predict(full, df[,c("popul", "wind", "precip", "temp", "predays")])
-yhat.red <-  predict(reduced2, df[, c("popul", "temp")])
+rss1 <- sum((Prestige$income - yhat.full)^2) 
+rss0 <- sum((Prestige$income - yhat.red)^2)
 
-rss1 <- sum((df$SO2 - yhat.full)^2) 
-rss0 <- sum((df$SO2 - yhat.red)^2)
-
-p1 <- 5 # Number of variables included in the full model
+p1 <- 4 # Number of variables included in the full model
 p0 <- 2 # Number of variables included in the reduced(nested) model
 
-n <- nrow(df) # Number of observations
+n <- nrow(Prestige) # Number of observations
 F0 <- ((rss0 - rss1)/(p1 - p0)) / (rss1 / (n - p1 - 1))
 F0
 
