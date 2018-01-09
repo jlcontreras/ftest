@@ -1,9 +1,10 @@
+setwd("repos/uni/f-test/")
 # The dataset contains info about pollution levels in different cities of the USA.
 df <- read.csv("air_pollution.csv")
 
 # Lets see if we can model SO2 as dependent on the population of each city and
 # the number of raining days
-model.full <- lm(SO2 ~ popul + precip, data = df) 
+model.full <- lm(SO2 ~ popul + predays, data = df) 
 
 # TODO: Interpret the p-values of each of the variables
 summary(model.full)
@@ -17,16 +18,19 @@ summary(model.full)
 #fitted.reduced <- predict(model.reduced, df[,c("popul","precip")])
 #sser <- sum((df$SO2 - fitted.reduced)^2) # Reduced model
 
-# Fit both models to our data, in order to get the error sum of squares of both models
-fitted.full    <- predict(model.full,    df[,c("popul","precip")])
+# Fit the model to our data, in order to get the error sum of squares of both models
+fitted.full <- predict(model.full,  df[,c("popul","precip")])
 
-ssef <- sum((df$SO2 - fitted.full)^2)        # Full model
-sser <- sum((df$precip - mean(df$precip))^2) # Reduced model, which is only Y = mean(y)
-
+ssr <- sum((fitted.full - mean(df$SO2))^2)  # Regression sum of squares
+sse <- sum((df$SO2 - fitted.full)^2)        # Error (residual) sum of squares
 
 # Calculate the F-statistic
 k <- 2        # Number of vars used in the full model
 n <- nrow(df) # Number of observations
-F <- (ssef / k) / (sser / (n - k - 1))
+F <- (ssr / k) / (sse / (n - k - 1))
+F
 
 # Now, how to get from the F-statistic to a p-value??
+pvalue <- 1 - pf(F, k, n-k-1)
+pvalue
+
